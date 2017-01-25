@@ -19,6 +19,7 @@ public class GetJsonUtil {
     public static List<NewsBean> getJson(String url) {
         List<NewsBean> newsBeanList = new ArrayList<>();
         NewsBean newsBean;
+
         try {
             //获取请求返回字符串
             String jsonString = JsonToStringUtil.JsonToString(new URL(url).openStream());

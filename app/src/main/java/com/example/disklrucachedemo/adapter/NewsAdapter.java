@@ -26,7 +26,7 @@ public class NewsAdapter extends BaseAdapter {
     private Context context;
     private List<NewsBean> list;
 
-    public NewsAdapter(Context context, List<NewsBean> list, ListView lv) {
+    public NewsAdapter(Context context, List<NewsBean> list) {
         this.context = context;
         this.list = list;
     }
@@ -37,30 +37,30 @@ public class NewsAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int i) {
-        return list.get(i);
+    public Object getItem(int position) {
+        return list.get(position);
     }
 
     @Override
-    public long getItemId(int i) {
-        return i;
+    public long getItemId(int position) {
+        return position;
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(int position, View convertView, ViewGroup viewGroup) {
         ViewHolder viewHolder;
 
-        if (view == null) {
-            view = View.inflate(context, R.layout.item_news, null);
+        if (convertView == null) {
+            convertView = View.inflate(context, R.layout.item_news, null);
         }
 
         // 得到一个ViewHolder
-        viewHolder = ViewHolder.getViewHolder(view);
+        viewHolder = ViewHolder.getViewHolder(convertView);
 
         //先加载默认图片 防止有的没有图
         viewHolder.iconImage.setImageResource(R.mipmap.ic_launcher);
 
-        String iconUrl = list.get(i).newsIconUrl;
+        String iconUrl = list.get(position).newsIconUrl;
 
         //当前位置的ImageView与图片的URL绑定
         viewHolder.iconImage.setTag(iconUrl);
@@ -70,10 +70,10 @@ public class NewsAdapter extends BaseAdapter {
         //第一种方式 通过子线程设置
         new ThreadUtil().showImageByThread(viewHolder.iconImage, iconUrl);
 
-        viewHolder.titleText.setText(list.get(i).newsTitle);
-        viewHolder.contentText.setText(list.get(i).newsContent);
+        viewHolder.titleText.setText(list.get(position).newsTitle);
+        viewHolder.contentText.setText(list.get(position).newsContent);
 
-        return view;
+        return convertView;
     }
 
     static class ViewHolder {

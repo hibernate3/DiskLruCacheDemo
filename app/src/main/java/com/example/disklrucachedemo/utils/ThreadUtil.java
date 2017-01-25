@@ -67,9 +67,12 @@ public class ThreadUtil {
         try {
             URL url = new URL(urlStr);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
             is = new BufferedInputStream(connection.getInputStream());
             bitmap = BitmapFactory.decodeStream(is);
+
             connection.disconnect();
+
             return bitmap;
         } catch (java.io.IOException e) {
             e.printStackTrace();
