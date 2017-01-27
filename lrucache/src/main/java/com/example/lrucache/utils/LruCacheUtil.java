@@ -3,6 +3,7 @@ package com.example.lrucache.utils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.util.LruCache;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -66,12 +67,14 @@ public class LruCacheUtil {
         //如果缓存中没有，先设为默认图片
         if (bitmap == null) {
             iv.setImageResource(R.mipmap.ic_launcher);
+
+//            NewsAsyncTask task = new NewsAsyncTask(url);
+//            task.execute(url);
         } else {
             //如果缓存中有 直接设置
             iv.setImageBitmap(bitmap);
         }
     }
-
 
     /**
      * 将一个URL转换成bitmap对象
@@ -86,9 +89,12 @@ public class LruCacheUtil {
         try {
             URL url = new URL(urlStr);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
             is = new BufferedInputStream(connection.getInputStream());
             bitmap = BitmapFactory.decodeStream(is);
+
             connection.disconnect();
+
             return bitmap;
         } catch (java.io.IOException e) {
             e.printStackTrace();

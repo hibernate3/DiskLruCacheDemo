@@ -1,6 +1,7 @@
 package com.example.lrucache.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -60,30 +61,30 @@ public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollList
     }
 
     @Override
-    public Object getItem(int i) {
-        return list.get(i);
+    public Object getItem(int position) {
+        return list.get(position);
     }
 
     @Override
-    public long getItemId(int i) {
-        return i;
+    public long getItemId(int position) {
+        return position;
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(int position, View convertView, ViewGroup viewGroup) {
         ViewHolder viewHolder;
 
-        if (view == null) {
-            view = View.inflate(context, R.layout.item_news, null);
+        if (convertView == null) {
+            convertView = View.inflate(context, R.layout.item_news, null);
         }
 
         // 得到一个ViewHolder
-        viewHolder = ViewHolder.getViewHolder(view);
+        viewHolder = ViewHolder.getViewHolder(convertView);
 
         //先加载默认图片 防止有的没有图
         viewHolder.iconImage.setImageResource(R.mipmap.ic_launcher);
 
-        String iconUrl = list.get(i).newsIconUrl;
+        String iconUrl = list.get(position).newsIconUrl;
 
         //当前位置的ImageView与图片的URL绑定
         viewHolder.iconImage.setTag(iconUrl);
@@ -93,33 +94,10 @@ public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollList
         //第二种方式 通过异步任务方式设置 且利用LruCache存储到内存缓存中
         lruCacheUtil.showImageByAsyncTask(viewHolder.iconImage, iconUrl);
 
-        viewHolder.titleText.setText(list.get(i).newsTitle);
-        viewHolder.contentText.setText(list.get(i).newsContent);
+        viewHolder.titleText.setText(list.get(position).newsTitle);
+        viewHolder.contentText.setText(list.get(position).newsContent);
 
-        return view;
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-        if (scrollState == SCROLL_STATE_IDLE) {
-            //加载可见项
-            lruCacheUtil.loadImages(mStart, mEnd);
-        } else {
-            //停止加载任务
-            lruCacheUtil.cancelAllTask();
-        }
-    }
-
-    @Override
-    public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        mStart = firstVisibleItem;
-        mEnd = firstVisibleItem + visibleItemCount;
-
-        //如果是第一次进入 且可见item大于0 预加载
-        if (mFirstIn && visibleItemCount > 0) {
-            lruCacheUtil.loadImages(mStart, mEnd);
-            mFirstIn = false;
-        }
+        return convertView;
     }
 
     static class ViewHolder {
@@ -145,4 +123,28 @@ public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollList
         }
     }
 
+    @Override
+    public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+        Log.i("myLog", "onScrollStateChanged: " + scrollState);
+        if (scrollState == SCROLL_STATE_IDLE) {
+            //加载可见项
+            lruCacheUtil.loadImages(mStart, mEnd);
+        } else {
+            //停止加载任务
+            lruCacheUtil.cancelAllTask();
+        }
+    }
+
+    @Override
+    public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        Log.i("myLog", "onScroll");
+        mStart = firstVisibleItem;
+        mEnd = firstVisibleItem + visibleItemCount;
+
+        //如果是第一次进入 且可见item大于0 预加载
+        if (mFirstIn && visibleItemCount > 0) {
+            lruCacheUtil.loadImages(mStart, mEnd);
+            mFirstIn = false;
+        }
+    }
 }
