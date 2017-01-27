@@ -1,7 +1,6 @@
 package com.example.lrucache.activity;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,7 +8,7 @@ import android.widget.ListView;
 
 import com.example.lrucache.R;
 import com.example.lrucache.adapter.NewsAdapter;
-import com.example.lrucache.bean.JsonBean;
+import com.example.lrucache.bean.JsonResponseBean;
 import com.example.lrucache.bean.NewsBean;
 import com.example.lrucache.utils.ApiService;
 
@@ -51,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         mSubscription = apiService.getJsonInfo(4, 30)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<JsonBean>() {
+                .subscribe(new Subscriber<JsonResponseBean>() {
                     @Override
                     public void onCompleted() {
                         Log.i("myLog", "onCompleted");
@@ -63,10 +62,10 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(JsonBean jsonBean) {
+                    public void onNext(JsonResponseBean jsonResponseBean) {
                         List<NewsBean> newsBeans = new ArrayList<NewsBean>();
 
-                        List<JsonBean.DataBean> dataBeans = jsonBean.getData();
+                        List<JsonResponseBean.DataBean> dataBeans = jsonResponseBean.getData();
 
                         for (int i=0; i<dataBeans.size(); i++) {
                             NewsBean newsBean = new NewsBean();

@@ -6,7 +6,7 @@ import java.util.List;
  * Created by wangyuhang on 2017/1/27.
  */
 
-public class JsonBean {
+public class JsonResponseBean {
 
     /**
      * status : 1
