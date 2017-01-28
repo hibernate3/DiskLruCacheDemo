@@ -24,35 +24,20 @@ import butterknife.ButterKnife;
  * Created by wangyuhang on 2017/1/25.
  */
 
-public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollListener {
+public class NewsAdapter extends BaseAdapter {
+
+    private static final String TAG = "myLog";
 
     private Context context;
     private List<NewsBean> list;
 
     private LruCacheUtil lruCacheUtil;
 
-    private int mStart, mEnd;//滑动的起始位置
-    public static String[] urls; //用来保存当前获取到的所有图片的Url地址
-
-    //是否是第一次进入
-    private boolean mFirstIn;
-
     public NewsAdapter(Context context, List<NewsBean> list, ListView lv) {
         this.context = context;
         this.list = list;
 
         lruCacheUtil = new LruCacheUtil(lv);
-
-        //存入url地址
-        urls = new String[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            urls[i] = list.get(i).newsIconUrl;
-        }
-
-        mFirstIn = true;
-
-        //注册监听事件
-        lv.setOnScrollListener(this);
     }
 
     @Override
@@ -92,6 +77,7 @@ public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollList
         //再加载联网图
 
         //第二种方式 通过异步任务方式设置 且利用LruCache存储到内存缓存中
+        Log.i(TAG, "getView");
         lruCacheUtil.showImageByAsyncTask(viewHolder.iconImage, iconUrl);
 
         viewHolder.titleText.setText(list.get(position).newsTitle);
@@ -120,31 +106,6 @@ public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollList
                 convertView.setTag(viewHolder);
             }
             return viewHolder;
-        }
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-        Log.i("myLog", "onScrollStateChanged: " + scrollState);
-        if (scrollState == SCROLL_STATE_IDLE) {
-            //加载可见项
-            lruCacheUtil.loadImages(mStart, mEnd);
-        } else {
-            //停止加载任务
-            lruCacheUtil.cancelAllTask();
-        }
-    }
-
-    @Override
-    public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        Log.i("myLog", "onScroll");
-        mStart = firstVisibleItem;
-        mEnd = firstVisibleItem + visibleItemCount;
-
-        //如果是第一次进入 且可见item大于0 预加载
-        if (mFirstIn && visibleItemCount > 0) {
-            lruCacheUtil.loadImages(mStart, mEnd);
-            mFirstIn = false;
         }
     }
 }

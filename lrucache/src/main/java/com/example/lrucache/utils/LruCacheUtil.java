@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,16 +24,15 @@ import java.util.Set;
  */
 
 public class LruCacheUtil {
+    private static final String TAG = "myLog";
+
     //LRU缓存
     private LruCache<String, Bitmap> mCache;
 
     private ListView mListView;
-    private Set<NewsAsyncTask> mTaskSet;
 
     public LruCacheUtil(ListView mListView) {
         this.mListView = mListView;
-
-        mTaskSet = new HashSet<>();
 
         //返回Java虚拟机将尝试使用的最大内存
         int maxMemory = (int) Runtime.getRuntime().maxMemory();
@@ -68,8 +66,8 @@ public class LruCacheUtil {
         if (bitmap == null) {
             iv.setImageResource(R.mipmap.ic_launcher);
 
-//            NewsAsyncTask task = new NewsAsyncTask(url);
-//            task.execute(url);
+            NewsAsyncTask task = new NewsAsyncTask(url);
+            task.execute(url);
         } else {
             //如果缓存中有 直接设置
             iv.setImageBitmap(bitmap);
@@ -110,41 +108,6 @@ public class LruCacheUtil {
         return null;
     }
 
-    /**
-     * 加载从start到end的所有的Image
-     *
-     * @param start
-     * @param end
-     */
-    public void loadImages(int start, int end) {
-        for (int i = start; i < end; i++) {
-            String url = NewsAdapter.urls[i];
-            //从缓存中取出图片
-            Bitmap bitmap = getBitmapFromCache(url);
-            //如果缓存中没有，则需要从网络中下载
-            if (bitmap == null) {
-                NewsAsyncTask task = new NewsAsyncTask(url);
-                task.execute(url);
-                mTaskSet.add(task);
-            } else {
-                //如果缓存中有 直接设置
-                ImageView imageView = (ImageView) mListView.findViewWithTag(url);
-                imageView.setImageBitmap(bitmap);
-            }
-        }
-    }
-
-    /**
-     * 停止所有当前正在运行的任务
-     */
-    public void cancelAllTask() {
-        if (mTaskSet != null) {
-            for (NewsAsyncTask task : mTaskSet) {
-                task.cancel(false);
-            }
-        }
-    }
-
     /*--------------------------------LruCache的实现-----------------------------------------*/
 
     /**
@@ -153,7 +116,7 @@ public class LruCacheUtil {
      * @param url    Bitmap对象的key
      * @param bitmap 对象的key
      */
-    public void addBitmapToCache(String url, Bitmap bitmap) {
+    public void putBitmapToCache(String url, Bitmap bitmap) {
         //如果缓存中没有
         if (getBitmapFromCache(url) == null) {
             //保存到缓存中
@@ -180,6 +143,7 @@ public class LruCacheUtil {
         private String url;
 
         public NewsAsyncTask(String url) {
+            Log.i(TAG, "NewsAsyncTask create");
             this.url = url;
         }
 
@@ -189,7 +153,7 @@ public class LruCacheUtil {
 
             //保存到缓存中
             if (bitmap != null) {
-                addBitmapToCache(strings[0], bitmap);
+                putBitmapToCache(strings[0], bitmap);
             }
 
             return bitmap;
@@ -199,7 +163,7 @@ public class LruCacheUtil {
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
 
-            //只有当前的ImageView所对应的UR的图片是一致的,才会设置图片
+            //只有当前的ImageView所对应的URL的图片是一致的,才会设置图片
             ImageView imageView = (ImageView) mListView.findViewWithTag(url);
             if (imageView != null && bitmap != null) {
                 imageView.setImageBitmap(bitmap);
