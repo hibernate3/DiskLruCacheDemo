@@ -88,6 +88,9 @@ public class DiskLruCacheUtil {
         //如果缓存中没有，则需要从网络中下载
         if (bitmap == null) {
             iv.setImageResource(R.mipmap.ic_launcher);
+
+            NewsAsyncTask task = new NewsAsyncTask(url);
+            task.execute(url);
         } else {
             //如果缓存中有 直接设置
             iv.setImageBitmap(bitmap);
@@ -162,41 +165,6 @@ public class DiskLruCacheUtil {
             }
         }
         return false;
-    }
-
-    /**
-     * 加载从start到end的所有的Image
-     *
-     * @param start
-     * @param end
-     */
-    public void loadImages(int start, int end) throws IOException {
-        for (int i = start; i < end; i++) {
-            String url = NewsAdapter.urls[i];
-            //从缓存中取出图片
-            Bitmap bitmap = getBitmapFromDiskCache(url);
-            //如果缓存中没有，则需要从网络中下载
-            if (bitmap == null) {
-                NewsAsyncTask task = new NewsAsyncTask(url);
-                task.execute(url);
-                mTaskSet.add(task);
-            } else {
-                //如果缓存中有 直接设置
-                ImageView imageView = (ImageView) mListView.findViewWithTag(url);
-                imageView.setImageBitmap(bitmap);
-            }
-        }
-    }
-
-    /**
-     * 停止所有当前正在运行的任务
-     */
-    public void cancelAllTask() {
-        if (mTaskSet != null) {
-            for (NewsAsyncTask task : mTaskSet) {
-                task.cancel(false);
-            }
-        }
     }
 
     /*--------------------------------DiskLruCaChe的实现-----------------------------------------*/

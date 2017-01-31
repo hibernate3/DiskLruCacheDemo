@@ -23,35 +23,18 @@ import butterknife.ButterKnife;
  * Created by wangyuhang on 2017/1/25.
  */
 
-public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollListener {
+public class NewsAdapter extends BaseAdapter {
 
     private Context context;
     private List<NewsBean> list;
 
     private DiskLruCacheUtil diskLruCacheUtil;
 
-    private int mStart, mEnd;//滑动的起始位置
-    public static String[] urls; //用来保存当前获取到的所有图片的Url地址
-
-    //是否是第一次进入
-    private boolean mFirstIn;
-
     public NewsAdapter(Context context, List<NewsBean> list, ListView lv) {
         this.context = context;
         this.list = list;
 
         diskLruCacheUtil = new DiskLruCacheUtil(context, lv);
-
-        //存入url地址
-        urls = new String[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            urls[i] = list.get(i).newsIconUrl;
-        }
-
-        mFirstIn = true;
-
-        //注册监听事件
-        lv.setOnScrollListener(this);
     }
 
     @Override
@@ -60,13 +43,13 @@ public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollList
     }
 
     @Override
-    public Object getItem(int i) {
-        return list.get(i);
+    public Object getItem(int position) {
+        return list.get(position);
     }
 
     @Override
-    public long getItemId(int i) {
-        return i;
+    public long getItemId(int position) {
+        return position;
     }
 
     @Override
@@ -101,37 +84,6 @@ public class NewsAdapter extends BaseAdapter implements AbsListView.OnScrollList
         viewHolder.contentText.setText(list.get(i).newsContent);
 
         return view;
-    }
-
-    @Override
-    public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-        if (scrollState == SCROLL_STATE_IDLE) {
-            //加载可见项
-            try {
-                diskLruCacheUtil.loadImages(mStart, mEnd);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            //停止加载任务
-            diskLruCacheUtil.cancelAllTask();
-        }
-    }
-
-    @Override
-    public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        mStart = firstVisibleItem;
-        mEnd = firstVisibleItem + visibleItemCount;
-
-        //如果是第一次进入 且可见item大于0 预加载
-        if (mFirstIn && visibleItemCount > 0) {
-            try {
-                diskLruCacheUtil.loadImages(mStart, mEnd);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            mFirstIn = false;
-        }
     }
 
     static class ViewHolder {
