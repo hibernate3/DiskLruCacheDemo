@@ -77,7 +77,6 @@ public class NewsAdapter extends BaseAdapter {
         //再加载联网图
 
         //第二种方式 通过异步任务方式设置 且利用LruCache存储到内存缓存中
-        Log.i(TAG, "getView");
         lruCacheUtil.showImageByAsyncTask(viewHolder.iconImage, iconUrl);
 
         viewHolder.titleText.setText(list.get(position).newsTitle);

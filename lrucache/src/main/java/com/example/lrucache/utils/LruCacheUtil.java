@@ -16,8 +16,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by wangyuhang on 2017/1/25.
@@ -66,8 +77,42 @@ public class LruCacheUtil {
         if (bitmap == null) {
             iv.setImageResource(R.mipmap.ic_launcher);
 
-            NewsAsyncTask task = new NewsAsyncTask(url);
-            task.execute(url);
+            Observable observable =  Observable.just(url)
+                    .map(new Func1<String, Bitmap>() {
+                        @Override
+                        public Bitmap call(String s) {
+                            Log.i(TAG, s);
+                            Bitmap bitmap = getBitmapFromURL(url);
+
+                            //保存到缓存中
+                            if (bitmap != null) {
+                                putBitmapToCache(url, bitmap);
+                            }
+
+                            return bitmap;
+                        }
+                    }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+            observable.subscribe(new Subscriber<Bitmap>() {
+                @Override
+                public void onCompleted() {
+                    Log.i(TAG, "completed");
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                    Log.e(TAG, "onError: " + e.getMessage());
+                }
+
+                @Override
+                public void onNext(Bitmap bitmap) {
+                    //只有当前的ImageView所对应的URL的图片是一致的,才会设置图片
+                    ImageView imageView = (ImageView) mListView.findViewWithTag(url);
+                    if (imageView != null && bitmap != null) {
+                        imageView.setImageBitmap(bitmap);
+                    }
+                }
+            });
         } else {
             //如果缓存中有 直接设置
             iv.setImageBitmap(bitmap);
@@ -92,9 +137,9 @@ public class LruCacheUtil {
             bitmap = BitmapFactory.decodeStream(is);
 
             connection.disconnect();
-
             return bitmap;
         } catch (java.io.IOException e) {
+            Log.e(TAG, "Exception: " + e.getMessage());
             e.printStackTrace();
         } finally {
             try {
@@ -135,39 +180,4 @@ public class LruCacheUtil {
     }
 
     /*--------------------------------LruCache的实现-----------------------------------------*/
-
-    /**
-     * 异步任务类
-     */
-    private class NewsAsyncTask extends AsyncTask<String, Void, Bitmap> {
-        private String url;
-
-        public NewsAsyncTask(String url) {
-            Log.i(TAG, "NewsAsyncTask create");
-            this.url = url;
-        }
-
-        @Override
-        protected Bitmap doInBackground(String... strings) {
-            Bitmap bitmap = getBitmapFromURL(strings[0]);
-
-            //保存到缓存中
-            if (bitmap != null) {
-                putBitmapToCache(strings[0], bitmap);
-            }
-
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-
-            //只有当前的ImageView所对应的URL的图片是一致的,才会设置图片
-            ImageView imageView = (ImageView) mListView.findViewWithTag(url);
-            if (imageView != null && bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-            }
-        }
-    }
 }
