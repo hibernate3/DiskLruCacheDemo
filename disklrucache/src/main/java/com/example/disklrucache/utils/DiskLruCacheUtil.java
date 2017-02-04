@@ -13,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.example.disklrucache.R;
-import com.example.disklrucache.adapter.NewsAdapter;
 import com.jakewharton.disklrucache.DiskLruCache;
 
 import java.io.BufferedInputStream;
@@ -28,17 +27,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Created by wangyuhang on 2017/1/25.
  */
 
 public class DiskLruCacheUtil {
+    private static final String TAG = "myLog";
+
     private Context mContext;
     private ListView mListView;
-    private Set<NewsAsyncTask> mTaskSet;
 
     //定义DiskLruCache
     private DiskLruCache mDiskCache;
@@ -48,15 +46,11 @@ public class DiskLruCacheUtil {
     private static final int IO_BUFFER_SIZE = 8 * 1024;
     //缓存个数
     private static final int DISK_CACHE_INDEX = 0;
-    //缓存文件是否创建
-    private boolean mIsDiskLruCacheCreated = false;
 
     public DiskLruCacheUtil(Context context, ListView listView) {
         this.mListView = listView;
 
         mContext = context.getApplicationContext();
-
-        mTaskSet = new HashSet<>();
 
         //得到缓存文件
         File diskCacheDir = getDiskCacheDir(mContext, "diskcache");
@@ -65,11 +59,10 @@ public class DiskLruCacheUtil {
         if (!diskCacheDir.exists()) {
             diskCacheDir.mkdirs();
         }
+
         if (getUsableSpace(diskCacheDir) > DISK_CACHE_SIZE) {
             try {
-                mDiskCache = DiskLruCache.open(diskCacheDir, 1, 1,
-                        DISK_CACHE_SIZE);
-                mIsDiskLruCacheCreated = true;
+                mDiskCache = DiskLruCache.open(diskCacheDir, 1, 1, DISK_CACHE_SIZE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -338,7 +331,6 @@ public class DiskLruCacheUtil {
             if (imageView != null && bitmap != null) {
                 imageView.setImageBitmap(bitmap);
             }
-            mTaskSet.remove(this);
         }
     }
 }
